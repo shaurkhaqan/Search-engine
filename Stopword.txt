@@ -1,0 +1,119 @@
+package javaapplication69;
+import java.util.*;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
+/**
+ *
+ * @author Umar Faisal Khan
+ */
+public class JavaApplication69 {
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) {
+        // TODO code application logic here
+          try {
+            File inputFile = new File("pages_test.xml");
+            SAXParserFactory factory = SAXParserFactory.newInstance();
+            SAXParser saxParser = factory.newSAXParser();
+            myHandler myHandler = new myHandler();
+            saxParser.parse(inputFile, myHandler);
+        } catch (IOException | ParserConfigurationException | SAXException e) {
+            e.printStackTrace();
+        }
+    }
+    
+}
+class myHandler extends DefaultHandler {
+    boolean bid = false;
+    boolean btitle = false;
+    boolean btext = false;
+    boolean flag;
+    String text;
+    String TITLE;
+    String ID;
+    StringBuilder Add = new StringBuilder();
+    String D;
+    
+    @Override
+    public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+        if (qName.equalsIgnoreCase("page")) {
+            flag= true;
+        } else if (qName.equalsIgnoreCase("title")) {
+            btitle = true;
+        } else if (qName.equalsIgnoreCase("id") && flag) {
+            bid = true;
+            flag= false;
+        } else if (qName.equalsIgnoreCase("text")) {
+            btext = true;
+        }
+    }
+    @Override
+    public void endElement(String uri, String localName, String qName) throws SAXException {
+        if (qName.equalsIgnoreCase("text")) {
+            btext = false;
+            text = Add.toString();
+        }
+        if (qName.equalsIgnoreCase("page")) {
+            text=remove_stop_words(text);
+         
+           TITLE=TITLE.toLowerCase();
+         
+            String [] title=TITLE.split("\\s+");
+             //   System.out.println(TITLE);
+               // System.out.println(text);
+              String[] arr = text.split("\\s+"); 
+//            for(int l =0;l<arr.length;l++){
+//            System.out.print(arr[l]+" ");
+//            }
+           
+            System.out.println("End Element :" + qName);
+           System.out.print("TEXT: ");
+//            for ( String ss : arr) {
+//           System.out.println(ss);
+//       hash1.put(ss, hash);
+//           int count=0;
+//           hash.put(ID,count);
+//  }
+        //    System.out.println("TEXT: " + text);
+            Add = new StringBuilder();
+            
+              } 
+    }
+    @Override
+    public void characters(char[] buffer, int start, int length) throws SAXException {
+        if (btitle) {
+            System.out.println("TITLE: " + new String(buffer, start, length));
+            TITLE = new String(buffer, start, length);
+            btitle = false;
+        } else if (bid) {
+            System.out.println("ID: " + new String(buffer, start, length));
+            ID=new String(buffer, start, length);
+            bid = false;
+        } else if (btext) {
+            String D = new String(buffer, start, length);
+            Add.append(D);
+        }
+    }
+    public String remove_stop_words(String t){
+    t = t.toLowerCase();
+    // t = t.replaceAll("[0-100]*$", "");
+            String E = t.replaceAll("\\W+", " ");
+            String stop_words[]={"\\ba\\b","\\babout\\b","\\babove\\b","\\bafter\\b","\\bagain\\b","\\bagainst\\b","\\ball\\b","\\bam\\b",
+                "\\ban\\b","\\band\\b","\\bany\\b","\\bare\\b","\\bas\\b","\\bat\\b","\\bbe\\b","\\bbecause\\b","\\bbeen\\b",
+                "\\bbefore\\b","\\bbeing\\b","\\bbelow\\b","\\bbetween\\b","\\bboth\\b","\\bbut\\b","\\bby\\b","\\bcould\\b","\\bis\\b","\\bthe\\b",
+            "\\bin\\b","\\bit\\b","\\bof\\b","\\bon\\b","\\bhas\\b","\\bhave\\b"};
+        for (String stop_word : stop_words) {
+            E = E.replaceAll(stop_word, "");
+        }
+            return E;
+    }
+    
+}
