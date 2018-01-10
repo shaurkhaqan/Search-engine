@@ -1,0 +1,198 @@
+package javaapplication69;
+import java.util.*;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
+/**
+ *
+ * @author Toshiba
+ */
+public class JavaApplication69 {
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) {
+        // TODO code application logic here
+          try {
+            File inputFile = new File("pages_test.xml");
+            SAXParserFactory factory = SAXParserFactory.newInstance();
+            SAXParser saxParser = factory.newSAXParser();
+            myHandler myHandler = new myHandler();
+            saxParser.parse(inputFile, myHandler);
+        } catch (IOException | ParserConfigurationException | SAXException e) {
+            e.printStackTrace();
+        }
+    }
+    
+}
+class myHandler extends DefaultHandler {
+    boolean bid = false;
+    boolean btitle = false;
+    boolean btext = false;
+    boolean flag;
+    String text;
+    String TITLE;
+    String ID;
+    StringBuilder Add = new StringBuilder();
+    String D;
+    
+    @Override
+    public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+        if (qName.equalsIgnoreCase("page")) {
+            flag= true;
+        } else if (qName.equalsIgnoreCase("title")) {
+            btitle = true;
+        } else if (qName.equalsIgnoreCase("id") && flag) {
+            bid = true;
+            flag= false;
+        } else if (qName.equalsIgnoreCase("text")) {
+            btext = true;
+        }
+    }
+    @Override
+    public void endElement(String uri, String localName, String qName) throws SAXException {
+        if (qName.equalsIgnoreCase("text")) {
+            btext = false;
+            text = Add.toString();
+        }
+        if (qName.equalsIgnoreCase("page")) {
+            text=remove_stop_words(text);
+         
+           TITLE=TITLE.toLowerCase();
+         
+            String [] title=TITLE.split("\\s+");
+             //   System.out.println(TITLE);
+               // System.out.println(text);
+              String[] arr = text.split("\\s+"); 
+//            for(int l =0;l<arr.length;l++){
+//            System.out.print(arr[l]+" ");
+//            }
+      int list_index=0;
+            int check =0;
+            ArrayList<splitting> list;
+            list = new ArrayList<>();
+           
+              for ( int i =0;i<title.length;i++) {
+                  for (int k = 0;k<list_index;k++){
+                     splitting s3= list.get(k);
+                        if(s3.term.equals(title[i])){
+//                               s1[k].b_count++;
+                             s3.t_count++;
+                              list.set(k,s3);
+                              check=1;
+                              break;
+                        }
+                        
+                  }
+                  if(check ==0){
+                  splitting s2= new splitting();
+                  s2.term=title[i];
+                  s2.p_id=ID;
+                  s2.t_count++;
+                  list.add(i,s2);
+//                  s1[i] =new splitting();
+//                 
+//                  s1[i].term=title[i];
+//                  s1[i].t_count++;
+                  list_index++;
+                  check =0;
+                  }
+              }
+        //    System.out.println(arr.length);
+              for ( int j =0;j<arr.length;j++) {
+                  for (int k = 0;k<list_index;k++){
+                     splitting s3= list.get(k);
+                        if(s3.term.equals(arr[j])){
+//                               s1[k].b_count++;
+                             s3.b_count++;
+                              list.set(k,s3);
+                              check=1;
+                              break;
+                        }
+                        
+                  }
+              
+                  if(check == 0){
+//                        s1[c] =new splitting();
+//                        s1[c].term=arr[j];
+//                        s1[c].b_count++;
+                        splitting s4= new splitting();
+                         s4.term=arr[j];
+                         s4.p_id=ID;
+                         s4.b_count++;
+                         list.add(list_index,s4);
+                         list_index++;
+                  }
+                  check=0;
+              }
+//              for (splitting s11 : s1) {
+//                System.out.println(s11.term + " " + s11.t_count + " " + s11.b_count);
+//            }      
+            System.out.println("End Element :" + qName);
+           System.out.print("TEXT: ");
+//            for ( String ss : arr) {
+//           System.out.println(ss);
+//       hash1.put(ss, hash);
+//           int count=0;
+//           hash.put(ID,count);
+//  }
+        //    System.out.println("TEXT: " + text);
+            Add = new StringBuilder();
+            
+              } 
+    }
+    @Override
+    public void characters(char[] buffer, int start, int length) throws SAXException {
+        if (btitle) {
+            System.out.println("TITLE: " + new String(buffer, start, length));
+            TITLE = new String(buffer, start, length);
+            btitle = false;
+        } else if (bid) {
+            System.out.println("ID: " + new String(buffer, start, length));
+            ID=new String(buffer, start, length);
+            bid = false;
+        } else if (btext) {
+            String D = new String(buffer, start, length);
+            Add.append(D);
+        }
+    }
+    public String remove_stop_words(String t){
+    t = t.toLowerCase();
+    // t = t.replaceAll("[0-100]*$", "");
+            String E = t.replaceAll("\\W+", " ");
+            String stop_words[]={"\\ba\\b","\\babout\\b","\\babove\\b","\\bafter\\b","\\bagain\\b","\\bagainst\\b","\\ball\\b","\\bam\\b",
+                "\\ban\\b","\\band\\b","\\bany\\b","\\bare\\b","\\bas\\b","\\bat\\b","\\bbe\\b","\\bbecause\\b","\\bbeen\\b",
+                "\\bbefore\\b","\\bbeing\\b","\\bbelow\\b","\\bbetween\\b","\\bboth\\b","\\bbut\\b","\\bby\\b","\\bcould\\b","\\bis\\b","\\bthe\\b",
+            "\\bin\\b","\\bit\\b","\\bof\\b","\\bon\\b","\\bhas\\b","\\bhave\\b"};
+        for (String stop_word : stop_words) {
+            E = E.replaceAll(stop_word, "");
+        }
+            return E;
+    }
+    
+}
+class splitting{
+String term;
+String p_id;
+int t_count;
+int b_count;
+int rank;
+  public splitting(){
+  term="";
+  p_id="";
+  t_count=0;
+  b_count=0;
+  rank = 0;
+  }
+  public splitting(String t,int t1,int t2){
+  term = t;
+  t_count = t1;
+  b_count =t2;
+  }
+}
